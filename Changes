@@ -15,3 +15,6 @@ Revision history for Perl extension Finance::Bank::Barclays.
 	- now uses WWW::Mechanize (which requires Clone and
 	  Test::Simple)
 	- follow Barclays' redesigned web site
+
+0.05  Mon Jan 27 10:41:52 GMT 2003
+	- oops, need to list WWW:Mechanize in the PREREQ_PM line
