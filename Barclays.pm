@@ -2,7 +2,7 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.08';
+our $VERSION='0.09';
 use LWP::UserAgent;
 use WWW::Mechanize;
 
@@ -41,7 +41,7 @@ sub check_balance {
 
 	my $content=$agent->content();
 	my $letter1=0; my $letter2=0;
-	if($content =~ m/Please enter letter (\d) of your memorable word.*Please enter letter (\d) of your memorable word/si) {
+	if($content =~ m/letter (\d) of your memorable word.*letter (\d) of your memorable word/si) {
 		$letter1=$1;
 		$letter2=$2;
 	} else {
