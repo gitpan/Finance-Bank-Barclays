@@ -2,7 +2,7 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.09';
+our $VERSION='0.10';
 use LWP::UserAgent;
 use WWW::Mechanize;
 
@@ -35,6 +35,11 @@ sub check_balance {
 	$agent->field("membershipNo",$mno); # ignore leading 2010
 	$agent->click("Next");
 	#print "first: ".$agent->status()."\n";
+
+	# There's a redirect to a 'new version' in there right now
+	if(defined($agent->find_link(tag=>"meta",n=>0))) {
+		$agent->follow_link(tag=>"meta",n=>0);
+	}
 
 	$agent->form(1);
 	$agent->field("passCode",$opts{passcode});
