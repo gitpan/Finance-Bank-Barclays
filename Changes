@@ -4,3 +4,5 @@ Revision history for Perl extension Finance::Bank::Barclays.
 	- original version; created by h2xs 1.21 with options
 		-AX -n Finance::Bank::Barclays
 
+0.02  Mon Nov 18 10:57:56 GMT 2002
+	- fixed bug with negative balances
