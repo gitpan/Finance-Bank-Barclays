@@ -2,7 +2,7 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.02';
+our $VERSION='0.03';
 use LWP::UserAgent;
 our $ua=LWP::UserAgent->new(
 	env_proxy => 1, 
@@ -87,8 +87,8 @@ sub check_balance {
 		if($line =~ m/\s*(\d\d-\d\d-\d\d)\s+(\d+)/) {
 			push @sortcodes, $1;
 			push @acnumbers, $2;
-		} elsif($line =~ m/\<b\>\s*(-?&\#163;[0-9.]+)\s*\</) {
-			$b=$1; $b =~ s/&#163;//;
+		} elsif($line =~ m/\<b\>\s*(-?&\#163;[0-9,.]+)\s*\</) {
+			$b=$1; $b =~ s/&#163;//; $b =~ s/,//g;
 			push @balances, $b;
 		}
 	}

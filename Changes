@@ -6,3 +6,7 @@ Revision history for Perl extension Finance::Bank::Barclays.
 
 0.02  Mon Nov 18 10:57:56 GMT 2002
 	- fixed bug with negative balances
+
+0.03  Mon Nov 25 12:44:42 GMT 2002
+	- included change from Matt Biddulph for handling balances
+		over £999 (thanks!)
