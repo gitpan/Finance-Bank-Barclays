@@ -1,0 +1,69 @@
+Barclays(3)    User Contributed Perl Documentation    Barclays(3)
+
+
+
+NNAAMMEE
+       Finance::Bank::Barclays - Check your Barclays bank
+       accounts from Perl
+
+SSYYNNOOPPSSIISS
+         use Finance::Bank::Barclays;
+         my @accounts = Finance::Bank::Barclays->check_balance(
+                 memnumber => "xxxxxxxxxxxx",
+                 passcode => "12345",
+                 surname => "Smith",
+                 password => "xxxxxxxx"
+         );
+
+         foreach (@accounts) {
+                 printf "%8s %8s : GBP %8.2f\n",
+                 $_->{sort_code}, $_->{account_no}, $_->{balance};
+         }
+
+
+DDEESSCCRRIIPPTTIIOONN
+       This module provides a rudimentary interface to the Bar­
+       clays Online Banking service at "https://ibank.bar­
+       clays.co.uk". You will need either "Crypt::SSLeay" or
+       "IO::Socket::SSL" installed for HTTPS support to work with
+       LWP.
+
+CCLLAASSSS MMEETTHHOODDSS
+         check_balance(memnumber => $u, passcode => $p, surname => $s,
+           password => $w)
+
+       Return an array of account objects, one for each of your
+       bank accounts.
+
+OOBBJJEECCTT MMEETTHHOODDSS
+         $ac->sort_code
+         $ac->account_no
+
+       Return the account sort code (in the format XX-YY-ZZ) and
+       the account number.
+
+         $ac->balance
+
+       Return the account balance as a signed floating point
+       value.
+
+WWAARRNNIINNGG
+       This warning is from Simon Cozens' "Finance::Bank::Lloyd­
+       sTSB", and seems just as apt here.
+
+       This is code for oonnlliinnee bbaannkkiinngg, and that means yyoouurr
+       mmoonneeyy, and that means BBEE CCAARREEFFUULL. You are encouraged, nay,
+       expected, to audit the source of this module yourself to
+       reassure yourself that I am not doing anything untoward
+       with your banking data. This software is useful to me, but
+       is provided under NNOO GGUUAARRAANNTTEEEE, explicit or implied.
+
+TTHHAANNKKSS
+       Simon Cozens for "Finance::Bank::LloydsTSB" and Perl
+       hand-holding.  Chris Ball for "Finance::Bank::HSBC".
+
+AAUUTTHHOORR
+       Dave Holland "dave@biff.org.uk"
+
+
+
