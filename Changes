@@ -26,3 +26,8 @@ Revision history for Perl extension Finance::Bank::Barclays.
 0.07  Tue Oct 28 16:48:49 GMT 2003
 	- tick the checkbox on the "security warning" front page before
 	  following the "next" link
+
+0.08  Tue Dec  2 11:38:19 GMT 2003
+	- support use of https proxy (works with Crypt::SSLeay and
+	  Net::SSL - doesn't work with Net::SSLeay and IO::Socket::SSL -
+	  patches welcome)

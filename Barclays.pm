@@ -2,10 +2,18 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.07';
+our $VERSION='0.08';
 use LWP::UserAgent;
 use WWW::Mechanize;
-our $agent = WWW::Mechanize->new();
+
+# hackery for https proxy support
+my $https_proxy=$ENV{https_proxy};
+delete $ENV{https_proxy} if($https_proxy);
+
+our $agent = WWW::Mechanize->new(env_proxy=>1);
+
+$agent->env_proxy;     # Load proxy settings (but not the https proxy)
+$ENV{https_proxy}=$https_proxy if($https_proxy);
 
 sub check_balance {
 	my ($class,%opts)=@_;
