@@ -22,3 +22,7 @@ Revision history for Perl extension Finance::Bank::Barclays.
 0.06  Wed Sep 17 13:47:31 BST 2003
 	- if the account data isn't on the front page, look for a "next"
 	  link to follow and try again
+
+0.07  Tue Oct 28 16:48:49 GMT 2003
+	- tick the checkbox on the "security warning" front page before
+	  following the "next" link

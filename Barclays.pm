@@ -2,7 +2,7 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.06';
+our $VERSION='0.07';
 use LWP::UserAgent;
 use WWW::Mechanize;
 our $agent = WWW::Mechanize->new();
@@ -65,6 +65,9 @@ sub check_balance {
 	# behind a front screen)
 
 	if($#sortcodes==-1) {
+		if($agent->content() =~ m/input.*checkbox.*confirmation/is) {
+			$agent->field("confirmation","true"); # ack, checkbox
+		}
 		$agent->click("Next") or croak "couldn't click while hunting";
 		@page=split(/\n/,$agent->content);
 		$line="";
