@@ -2,15 +2,10 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.03';
+our $VERSION='0.04';
 use LWP::UserAgent;
-our $ua=LWP::UserAgent->new(
-	env_proxy => 1, 
-	keep_alive => 1, 
-	timeout => 30,
-	cookie_jar=> {},
-	agent => "Mozilla/4.0 (compatible; MSIE 5.12; Atari ST)"
-); 
+use WWW::Mechanize;
+our $agent = WWW::Mechanize->new();
 
 sub check_balance {
 	my ($class,%opts)=@_;
@@ -21,68 +16,39 @@ sub check_balance {
 
 	my $self=bless { %opts }, $class;
 
-	my $page=$ua->get("https://ibank.barclays.co.uk");
-	croak "index: ".$page->error_as_HTML unless $page->is_success;
+	$agent->quiet(0);
+	$agent->get("https://ibank.barclays.co.uk");
+	croak "index page not found (".$agent->status().")" unless ($agent->status()==200);
+	$agent->follow("log-in") or croak "couldn't find login link";
+	$agent->form(1);
+	$agent->field("surname",$opts{surname});
+	my $mno=$opts{memnumber};
+	if($mno =~ m/^2010(\d\d\d\d\d\d\d\d)$/ ) { $mno=$1; }
+	$agent->field("membershipNo",$mno); # ignore leading 2010
+	$agent->click("Next");
+	#print "first: ".$agent->status()."\n";
 
-	my $logonurl;
-	my @page=split(/\n/,$page->content);
-	my @logonline=grep(/log[io]n/i,@page);
-	if($#logonline == -1) { croak "Couldn't find logon URL"; }
-	if($logonline[0] =~ m/href=\"(\S+)\"/) { $logonurl=$1; }
+	$agent->form(1);
+	$agent->field("passCode",$opts{passcode});
 
-	$page=$ua->get("https://ibank.barclays.co.uk".$logonurl);
-	croak "logon: ".$page->error_as_HTML unless $page->is_success;
-
-	@page=split(/\n/,$page->content);
-	my $onlineurl=&getact(grep(/method="POST"/i,@page));
-
-	$page=$ua->post("https://ibank.barclays.co.uk".$onlineurl, {
-			action=>"Submit Membership Number",
-			servlet=>"startlogin",
-			Screen=>"logon",
-			membershipNo=>$opts{memnumber}
-			});
-	croak "first page: ".$page->error_as_HTML unless $page->is_success;
-
-	@page=split(/\n/,$page->content);
-	my $posturl=&getact(grep(/method="POST"/i,@page));
-	my $startTime=&getval(grep(/name=startTime/,@page));
-	my $colourType=&getval(grep(/name=colourType/,@page));
-	my $issued=&getval(grep(/name=issued/,@page));
-	my $sequence=&getval(grep(/name=sequence/,@page));
-	my $servlet=&getval(grep(/name=servlet/,@page));
-	my $usec=&getval(grep(/name=usec/,@page));
-
-	my $letter1=0;
-	my $letter2=0;
-	if($page->content =~ m/Letter\s+(\d).*Letter\s+(\d)/si) {
+	my $content=$agent->content();
+	my $letter1=0; my $letter2=0;
+	if($content =~ m/Please enter letter (\d) of your memorable word.*Please enter letter (\d) of your memorable word/si) {
 		$letter1=$1;
 		$letter2=$2;
 	} else {
-		croak "first page: couldn't identify letter numbers";
+		croak "couldn't identify which letters to use";
 	}
+	$agent->field("firstMDC",substr($opts{password},$letter1-1,1));
+	$agent->field("secondMDC",substr($opts{password},$letter2-1,1));
+	$agent->click("Log-in");
 
-	$page=$ua->post("https://ibank.barclays.co.uk".$posturl, {
-			startTime=>$startTime,
-			colourType=>$colourType,
-			issued=>$issued,
-			sequence=>$sequence,
-			servlet=>$servlet,
-			usec=>$usec,
-			passCode=>$opts{passcode},
-			surname=>$opts{surname},
-			firstMDC=>substr($opts{password},$letter1-1,1),
-			secondMDC=>substr($opts{password},$letter2-1,1),
-			action=>"Submit Passcode"
-			});
-	croak "second page: ".$page->error_as_HTML unless $page->is_success;
-
+	# parse the "at a glance" page for account balances
+	my @page=split(/\n/,$agent->content);
+	my $line="";
 	my @sortcodes=();
 	my @acnumbers=();
 	my @balances=();
-	my $b;
-	my $line;
-	@page=split(/\n/,$page->content);
 	foreach $line (@page) {
 		if($line =~ m/\s*(\d\d-\d\d-\d\d)\s+(\d+)/) {
 			push @sortcodes, $1;
@@ -105,25 +71,6 @@ sub check_balance {
 	}
 	return @accounts;
 }
-
-sub getval {
-	my $line=shift;
-	if($line =~ m/value="(\S*)"/) {
-		return $1;
-	} else {
-		return "NotFound";
-	}
-}
-
-sub getact {
-	my $line=shift;
-	if($line =~ m/action="(\S*)"/) {
-		return $1;
-	} else {
-		return "NotFound";
-	}
-}
-
 
 package Finance::Bank::Barclays::Account;
 
@@ -160,7 +107,7 @@ Finance::Bank::Barclays - Check your Barclays bank accounts from Perl
 This module provides a rudimentary interface to the Barclays Online
 Banking service at C<https://ibank.barclays.co.uk>. You will need either
 C<Crypt::SSLeay> or C<IO::Socket::SSL> installed for HTTPS support to
-work with LWP. 
+work. C<WWW::Mechanize> is required.
 
 =head1 CLASS METHODS
 
