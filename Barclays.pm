@@ -2,7 +2,7 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.05';
+our $VERSION='0.06';
 use LWP::UserAgent;
 use WWW::Mechanize;
 our $agent = WWW::Mechanize->new();
@@ -60,6 +60,30 @@ sub check_balance {
 	}
 
 	croak "sortcodes and balances don't match (".($#sortcodes+1)."/".($#balances+1).")" unless ($#sortcodes == $#balances);
+
+    # try harder to find the real data (Barclays sometimes hide it
+	# behind a front screen)
+
+	if($#sortcodes==-1) {
+		$agent->click("Next") or croak "couldn't click while hunting";
+		@page=split(/\n/,$agent->content);
+		$line="";
+		@sortcodes=();
+		@acnumbers=();
+		@balances=();
+		foreach $line (@page) {
+			if($line =~ m/\s*(\d\d-\d\d-\d\d)\s+(\d+)/) {
+				push @sortcodes, $1;
+				push @acnumbers, $2;
+			} elsif($line =~ m/\<b\>\s*(-?&\#163;[0-9,.]+)\s*\</) {
+				$b=$1; $b =~ s/&#163;//; $b =~ s/,//g;
+				push @balances, $b;
+			}
+		}
+
+		croak "sortcodes and balances don't match (".($#sortcodes+1)."/".($#balances+1).")" unless ($#sortcodes == $#balances);
+
+	}
 
 	my @accounts;
 	for(my $i=0; $i<=$#sortcodes; $i++) {

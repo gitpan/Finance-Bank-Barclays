@@ -18,3 +18,7 @@ Revision history for Perl extension Finance::Bank::Barclays.
 
 0.05  Mon Jan 27 10:41:52 GMT 2003
 	- oops, need to list WWW:Mechanize in the PREREQ_PM line
+
+0.06  Wed Sep 17 13:47:31 BST 2003
+	- if the account data isn't on the front page, look for a "next"
+	  link to follow and try again
