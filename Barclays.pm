@@ -2,7 +2,7 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.10';
+our $VERSION='0.11';
 use LWP::UserAgent;
 use WWW::Mechanize;
 
@@ -27,7 +27,9 @@ sub check_balance {
 	$agent->quiet(0);
 	$agent->get("https://ibank.barclays.co.uk");
 	croak "index page not found (".$agent->status().")" unless ($agent->status()==200);
-	$agent->follow("log-in") or croak "couldn't find login link";
+	while(!$agent->follow_link( url_regex => qr/LoginMember.do$/i, text_regex => qr/Log-in/i)) {
+		$agent->follow_link(url_regex => qr/Welcome.do$/i ) or croak("couldn't find login link");
+	}
 	$agent->form(1);
 	$agent->field("surname",$opts{surname});
 	my $mno=$opts{memnumber};
