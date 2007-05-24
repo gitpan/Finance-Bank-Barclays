@@ -2,7 +2,7 @@ package Finance::Bank::Barclays;
 use strict;
 use warnings;
 use Carp;
-our $VERSION='0.11';
+our $VERSION='0.12';
 use LWP::UserAgent;
 use WWW::Mechanize;
 
@@ -33,8 +33,8 @@ sub check_balance {
 	$agent->form(1);
 	$agent->field("surname",$opts{surname});
 	my $mno=$opts{memnumber};
-	if($mno =~ m/^2010(\d\d\d\d\d\d\d\d)$/ ) { $mno=$1; }
-	$agent->field("membershipNo",$mno); # ignore leading 2010
+	if($mno =~ m/^20(\d{10})$/ ) { $mno=$1; }
+	$agent->field("membershipNo",$mno); # ignore leading "20"
 	$agent->click("Next");
 	#print "first: ".$agent->status()."\n";
 
